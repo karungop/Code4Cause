@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './TeacherAssesment.css';
+import './teacherAssesment.css';
 
 const ConfigureAssessment = () => {
   const [numQuestions, setNumQuestions] = useState(5);
@@ -38,7 +38,7 @@ const ConfigureAssessment = () => {
       console.log('Success:', data);
       alert('Assessment configured successfully!');
       // Optionally, redirect somewhere after config
-      // navigate('/assessment-preview');
+      navigate('/students');
     } catch (error) {
       console.error('Error:', error);
       alert('Something went wrong. Please try again.');
