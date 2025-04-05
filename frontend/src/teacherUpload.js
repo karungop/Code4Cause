@@ -31,9 +31,28 @@ const ArticleUpload = () => {
         const data = await response.json();
         console.log('Success:', data);
       } else {
-        // Handle PDF upload logic here (if needed)
-        console.log('PDF upload would go here');
-      }
+        // Handle PDF upload
+    if (!pdfFile) {
+      throw new Error('Please select a PDF file');
+    }
+
+    const formData = new FormData();
+    formData.append('pdf', pdfFile);
+
+    const response = await fetch('http://127.0.0.1:5000/api/articles/upload-pdf', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to process PDF');
+    }
+
+    const data = await response.json();
+    console.log('PDF processing success:', data);
+    alert(`Successfully processed PDF!\nFilename: ${data.details.filename}\nPages: ${data.page_count || 'N/A'}\nSize: ${(data.details.size_bytes)}`);
+  }
   
       // Navigate after successful submission
       navigate('/configure-assessment');
