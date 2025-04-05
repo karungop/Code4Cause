@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './TeacherAssesment.css';
+import './teacherAssesment.css';
 
 const ConfigureAssessment = () => {
   const [numQuestions, setNumQuestions] = useState(5);
