@@ -9,14 +9,40 @@ const ArticleUpload = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    setTimeout(() => {
-      setIsLoading(false);
+  
+    try {
+      if (uploadMethod === 'url') {
+        // Send the URL to Flask
+        const response = await fetch('http://127.0.0.1:5000/api/articles/upload-url', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ url: articleUrl }),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Failed to upload URL');
+        }
+  
+        const data = await response.json();
+        console.log('Success:', data);
+      } else {
+        // Handle PDF upload logic here (if needed)
+        console.log('PDF upload would go here');
+      }
+  
+      // Navigate after successful submission
       navigate('/configure-assessment');
-    }, 1500);
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Failed to upload. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

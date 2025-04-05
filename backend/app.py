@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models import db, Article
+from routes import articles_bp  # Add this import at the top
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
@@ -9,6 +10,8 @@ CORS(app)  # Enable CORS for React frontend
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+app.register_blueprint(articles_bp, url_prefix='/api')  # Optional url_prefix
 
 @app.route('/')
 def home():
