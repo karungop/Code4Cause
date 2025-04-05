@@ -2,6 +2,7 @@ import React from 'react';
 import './students.css';
 import { useNavigate } from 'react-router-dom';
 
+
 const Students = () => {
   const assignments = [
     {
@@ -47,5 +48,6 @@ const Students = () => {
     </div>
   );
 };
+
 
 export default Students;

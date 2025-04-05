@@ -5,7 +5,7 @@
     padding: 40px;
     font-family: 'Segoe UI', sans-serif;
   }
-  
+ 
   .dashboard-title {
     font-size: 2.5rem;
     font-weight: 700;
@@ -13,14 +13,14 @@
     margin-bottom: 40px;
     text-align: center;
   }
-  
+ 
   /* Grid Layout */
   .assignment-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 30px;
   }
-  
+ 
   /* Card Styles */
   .assignment-card {
     background-color: #ffffff;
@@ -33,12 +33,12 @@
     flex-direction: column;
     justify-content: space-between;
   }
-  
+ 
   .assignment-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
   }
-  
+ 
   /* Text Styling */
   .assignment-title {
     font-size: 1.3rem;
@@ -46,20 +46,20 @@
     color: #2563eb;
     margin-bottom: 12px;
   }
-  
+ 
   .assignment-desc {
     color: #4b5563;
     font-size: 1rem;
     margin-bottom: 16px;
     line-height: 1.5;
   }
-  
+ 
   .assignment-due {
     font-size: 0.875rem;
     color: #6b7280;
     margin-bottom: 20px;
   }
-  
+ 
   /* Button */
   .assignment-button {
     background-color: #2563eb;
@@ -72,9 +72,8 @@
     font-size: 1rem;
     transition: background-color 0.3s ease, transform 0.2s ease;
   }
-  
+ 
   .assignment-button:hover {
     background-color: #1d4ed8;
     transform: scale(1.03);
   }
-  

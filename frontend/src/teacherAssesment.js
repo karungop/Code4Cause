@@ -38,7 +38,7 @@ const ConfigureAssessment = () => {
       console.log('Success:', data);
       alert('Assessment configured successfully!');
       // Optionally, redirect somewhere after config
-      // navigate('/assessment-preview');
+      navigate('/students');
     } catch (error) {
       console.error('Error:', error);
       alert('Something went wrong. Please try again.');

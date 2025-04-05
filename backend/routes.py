@@ -4,6 +4,9 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 from utils import get_article_info  # if you moved it out
 
+from werkzeug.utils import secure_filename 
+from flask import Blueprint, request, jsonify
+from openai import OpenAI
 
 # Create a Blueprint for articles
 
@@ -55,6 +58,43 @@ def upload_article_from_url():
     
     # you could add scraping logic here or just echo it back for now
     return jsonify({'message': 'URL received successfully', 'url': url}), 200
+
+@articles_bp.route('/articles/upload-pdf', methods=['POST'])
+def upload_article_from_pdf():
+    # Check if PDF file was received
+    if 'pdf' not in request.files:
+        return jsonify({'error': 'No PDF file received'}), 400
+    
+    pdf_file = request.files['pdf']
+    
+    # Validate file
+    if pdf_file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+    
+    if not pdf_file.filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Only PDF files are accepted'}), 400
+    
+    try:
+        # Basic file information
+        file_size = len(pdf_file.read())
+        pdf_file.seek(0)  # Reset file pointer
+        
+        # Simple confirmation response
+        return jsonify({
+            'status': 'success',
+            'message': 'PDF received successfully',
+            'details': {
+                'filename': secure_filename(pdf_file.filename),
+                'size_bytes': file_size,
+                'received_at': datetime.utcnow().isoformat()
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Error processing PDF: {str(e)}'
+        }), 500
+
 
 
 @articles_bp.route('/assessments/configure', methods=['POST'])
