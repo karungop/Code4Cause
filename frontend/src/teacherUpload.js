@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './TeacherUpload.css';
+import './teacherUpload.css';
 
 const ArticleUpload = () => {
   const [articleUrl, setArticleUrl] = useState('');
