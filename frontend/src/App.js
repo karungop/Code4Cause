@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ArticleUpload from './teacherUpload';
-import ConfigureAssessment from './teacherAssesment';
+import ArticleUpload from './TeacherUpload';
+import ConfigureAssessment from './TeacherAssesment';
 import Students from './students';
 
 function App() {

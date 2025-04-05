@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify
 from models import db, Article
 from datetime import datetime
 from werkzeug.utils import secure_filename 
+from flask import Blueprint, request, jsonify
+import fitz 
 
 # Create a Blueprint for articles
 
