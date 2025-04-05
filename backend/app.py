@@ -2,9 +2,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from models import db, Article
 from routes import articles_bp  # Add this import at the top
+from flask import Flask, request, jsonify
+from werkzeug.utils import secure_filename
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for React frontend
+UPLOAD_FOLDER = 'pdf_uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Database configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
