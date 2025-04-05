@@ -18,6 +18,30 @@ def upload_article_from_url():
     return jsonify({'message': 'URL received successfully', 'url': url}), 200
 
 
+@articles_bp.route('/assessments/configure', methods=['POST'])
+def configure_assessment():
+    data = request.get_json()
+    print("configure_assessment route hit!")  # ADD THIS
+
+    config = {
+        'total_questions': data.get('total_questions'),
+        'mcq': data.get('mcq'),
+        'short_answer': data.get('short_answer'),
+        'long_answer': data.get('long_answer'),
+        'require_verbal_summary': data.get('require_verbal_summary', False)
+    }
+
+    print("Received assessment config:", config)
+
+    # You can add logic here to save it, validate it, or generate questions
+
+    return jsonify({
+        'message': 'Assessment configuration received',
+        'config': config
+    }), 200
+
+
+
 @articles_bp.route('/articles', methods=['GET'])
 def get_articles():
     articles = Article.query.all()

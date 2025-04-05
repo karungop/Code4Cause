@@ -11,15 +11,42 @@ const ConfigureAssessment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    
-    setTimeout(() => {
-      setIsSubmitting(false);
+  
+    try {
+      const response = await fetch('http://127.0.0.1:5000/api/assessments/configure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          total_questions: numQuestions,
+          mcq: numMCQ,
+          short_answer: numShortAnswer,
+          long_answer: numLongAnswer,
+          require_verbal_summary: requireVerbalSummary,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to configure assessment');
+      }
+  
+      const data = await response.json();
+      console.log('Success:', data);
       alert('Assessment configured successfully!');
-    }, 1500);
+      // Optionally, redirect somewhere after config
+      // navigate('/assessment-preview');
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Something went wrong. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+  
 
   const totalQuestions = numMCQ + numShortAnswer + numLongAnswer;
 
