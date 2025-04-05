@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './teacherAssesment.css';
 
 const ConfigureAssessment = () => {
@@ -8,6 +9,7 @@ const ConfigureAssessment = () => {
   const [numLongAnswer, setNumLongAnswer] = useState(1);
   const [requireVerbalSummary, setRequireVerbalSummary] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -117,12 +119,13 @@ const ConfigureAssessment = () => {
           </div>
 
           <div className="form-actions">
-            <button
-              type="button"
-              className="secondary-btn"
-            >
-              Back
-            </button>
+          <button
+      type="button"
+      className="secondary-btn"
+      onClick={() => navigate('/')} // Goes back to upload page
+    >
+      Back
+    </button>
             <button
               type="submit"
               disabled={isSubmitting}
