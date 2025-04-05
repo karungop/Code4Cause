@@ -8,7 +8,7 @@ class Article(db.Model):
     title = db.Column(db.String(200), nullable=False)
     author = db.Column(db.String(100), nullable=False)
     content = db.Column(db.Text, nullable=False)
-    topics = db.Column(db.String(300))
+    #topics = db.Column(db.String(300))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -18,7 +18,7 @@ class Article(db.Model):
             'title': self.title,
             'author': self.author,
             'content': self.content,
-            'topics': self.topics,
+            #'topics': self.topics,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
