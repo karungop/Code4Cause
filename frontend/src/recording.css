@@ -1,0 +1,101 @@
+/* Center the entire container */
+.recordingsp {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  
+  /* Center the transcription summary box */
+  .divtransc {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 80%;
+    max-width: 600px;
+    text-align: center;
+  }
+  
+  .ursum {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+  
+  /* Microphone icon animation styling */
+  .w-32 {
+    width: 8rem;
+  }
+  
+  .h-32 {
+    height: 8rem;
+  }
+  
+  .mb-6 {
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Button styling */
+  button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #4caf50;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  button:active {
+    background-color: #388e3c;
+  }
+  
+  button:disabled {
+    background-color: #b0bec5;
+    cursor: not-allowed;
+  }
+  
+  /* Recording circle animation */
+  .recording-circle {
+    background-color: red;
+    width: 3em;
+    height: 3em;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    margin-bottom: 0.5em;
+    margin-right: 0.25em;
+  }
+  
+  @keyframes pulse {
+    0% {
+      background-color: red;
+    }
+    50% {
+      background-color: #f06c6c;
+    }
+    100% {
+      background-color: red;
+    }
+  }
+  
+  .ra{
+    height: 4em;
+    width: auto;
+  }

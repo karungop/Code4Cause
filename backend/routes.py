@@ -1,11 +1,45 @@
 from flask import Blueprint, request, jsonify
 from models import db, Article
 from datetime import datetime
+from bs4 import BeautifulSoup
+from utils import get_article_info  # if you moved it out
+
 from werkzeug.utils import secure_filename 
 from flask import Blueprint, request, jsonify
 from openai import OpenAI
 
 # Create a Blueprint for articles
+
+def scrapper(url):
+    results = get_article_info(url)  # Get article information (returns a dictionary)
+    print(results)  # Debug print the results to ensure we get the expected output
+    
+    # Ensure all required fields are available before proceeding.
+    title = results.get('Title')
+    source = results.get('Source')
+    description = results.get('Description')
+    link = results.get('Link')
+    
+    # If any required fields are missing, return None.
+    if not title or not source or not description:
+        return None
+    
+    # Create an Article instance using the data from the dictionary.
+    article = Article(
+        title=title,
+        author=source,  # Assuming source is used as author.
+        content=description,  # Assuming description is the article content.
+        topics=None,  # Set topics to None or extract if needed.
+        link=link
+    )
+    
+    # Add the article to the database session and commit.
+    db.session.add(article)
+    db.session.commit()
+    
+    return article  
+
+
 
 articles_bp = Blueprint('articles', __name__)
 
@@ -16,7 +50,12 @@ def upload_article_from_url():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
+    results = scrapper(url)
+
     print("Received URL:", url)
+    print()
+    #print(results)
+    
     # you could add scraping logic here or just echo it back for now
     return jsonify({'message': 'URL received successfully', 'url': url}), 200
 
