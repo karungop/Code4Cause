@@ -1,5 +1,6 @@
 import React from 'react';
 import './students.css';
+import { useNavigate } from 'react-router-dom';
 
 const Students = () => {
   const assignments = [
@@ -23,6 +24,11 @@ const Students = () => {
     },
   ];
 
+  const navigate = useNavigate();
+  const handleStartAssignment = () => {
+    navigate('/recording');
+  };
+
   return (
     <div className="student-dashboard">
       <h1 className="dashboard-title">📘 Reading Assignments</h1>
@@ -32,12 +38,9 @@ const Students = () => {
             <h2 className="assignment-title">{assignment.title}</h2>
             <p className="assignment-desc">{assignment.description}</p>
             <p className="assignment-due">Due: {assignment.dueDate}</p>
-            <button
-              className="assignment-button"
-              onClick={() => alert(`Starting: ${assignment.title}`)}
-            >
-              Start Assignment
-            </button>
+            <button class = "assignment-button" onClick={handleStartAssignment} className="start-button">
+      Start Assignment
+    </button >
           </div>
         ))}
       </div>

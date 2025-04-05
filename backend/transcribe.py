@@ -1,12 +1,20 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import torch
 import torchaudio
 import wave
 import threading
 from datetime import datetime
-from pynput import keyboard
 from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 import os
 import pyaudio
+
+app = Flask(__name__)
+CORS(app)
+
+# Load processor and model once
+processor = AutoProcessor.from_pretrained("rishabhjain16/whisper_medium_en_to_myst_pf")
+model = AutoModelForSpeechSeq2Seq.from_pretrained("rishabhjain16/whisper_medium_en_to_myst_pf")
 
 class AudioRecorder:
     def __init__(self, sample_rate=44100, channels=1, chunk=1024, format=pyaudio.paInt16):
@@ -19,12 +27,14 @@ class AudioRecorder:
         self.audio = pyaudio.PyAudio()
         self.stream = None
 
+
     def start_recording(self):
         if self.recording:
             return
         self.frames = []
         self.recording = True
 
+        # Remove the `input_device_index` so it uses the default input device
         self.stream = self.audio.open(
             format=self.format,
             channels=self.channels,
@@ -32,8 +42,6 @@ class AudioRecorder:
             input=True,
             frames_per_buffer=self.chunk
         )
-
-        print("🎙️ Recording started. Press 's' to stop...")
 
         threading.Thread(target=self._record, daemon=True).start()
 
@@ -49,8 +57,7 @@ class AudioRecorder:
         self.recording = False
         self.stream.stop_stream()
         self.stream.close()
-
-        print("🛑 Recording stopped")
+        self.audio.terminate()  # Explicitly terminate the audio stream to clean up resources
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"recorded_audio_{timestamp}.wav"
@@ -61,15 +68,15 @@ class AudioRecorder:
             wf.setframerate(self.sample_rate)
             wf.writeframes(b''.join(self.frames))
 
-        print(f"💾 Audio saved to {filename}")
         return filename
 
 def transcribe_audio(filepath):
-    print("🧠 Loading model for transcription...")
-    processor = AutoProcessor.from_pretrained("rishabhjain16/whisper_medium_en_to_myst_pf")
-    model = AutoModelForSpeechSeq2Seq.from_pretrained("rishabhjain16/whisper_medium_en_to_myst_pf")
-
     audio, rate = torchaudio.load(filepath)
+    
+    # Ensure audio file is not empty
+    if audio.numel() == 0:
+        raise ValueError(f"Audio file {filepath} is empty.")
+
     if rate != 16000:
         audio = torchaudio.functional.resample(audio, orig_freq=rate, new_freq=16000)
 
@@ -79,41 +86,33 @@ def transcribe_audio(filepath):
         predicted_ids = model.generate(inputs["input_features"])
 
     transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)[0]
-    print("📝 Transcription:", transcription)
+    return transcription
 
 def delete_recording(filepath):
     os.remove(filepath)
-    
-def on_press(key, recorder):
-    try:
-        if key.char == 'r' and not recorder.recording:
-            recorder.start_recording()
-        elif key.char == 's' and recorder.recording:
-            filepath = recorder.stop_recording()
-            if filepath:
-                transcribe_audio(filepath)
-                delete_recording(filepath)
-    except AttributeError:
-        pass
 
-def on_release(key, recorder):
-    if key == keyboard.Key.esc:
-        if recorder.recording:
-            recorder.stop_recording()
-        return False
+recorder = AudioRecorder()
+current_filepath = None
 
+@app.route('/start', methods=['POST'])
+def start():
+    if not recorder.recording:
+        recorder.start_recording()
+        return jsonify({"status": "recording started"})
+    return jsonify({"status": "already recording"}), 400
 
-def main():
-    recorder = AudioRecorder()
-    print("🔴 Press 'r' to start recording, 's' to stop and transcribe, 'esc' to quit")
+@app.route('/stop', methods=['POST'])
+def stop():
+    global current_filepath
+    if recorder.recording:
+        current_filepath = recorder.stop_recording()
+        if current_filepath:
+            try:
+                transcription = transcribe_audio(current_filepath)
+                return jsonify({"status": "recording stopped", "transcription": transcription})
+            finally:
+                delete_recording(current_filepath)  # Ensure the recording is deleted after use
+    return jsonify({"status": "not recording"}), 400
 
-    with keyboard.Listener(
-        on_press=lambda key: on_press(key, recorder),
-        on_release=lambda key: on_release(key, recorder)
-    ) as listener:
-        listener.join()
-
-    
-
-if __name__ == "__main__":
-    main()
+if __name__ == '__main__':
+    app.run(port=5000, debug=True)
