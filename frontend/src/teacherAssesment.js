@@ -18,8 +18,10 @@ const ConfigureAssessment = () => {
     setTimeout(() => {
       setIsSubmitting(false);
       alert('Assessment configured successfully!');
+      navigate('/students');
     }, 1500);
   };
+
 
   const totalQuestions = numMCQ + numShortAnswer + numLongAnswer;
 
