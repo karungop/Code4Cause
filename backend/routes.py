@@ -1,45 +1,21 @@
 from flask import Blueprint, request, jsonify
 from models import db, Article
 from datetime import datetime
-from bs4 import BeautifulSoup
-from utils import get_article_info  # if you moved it out
-
 from werkzeug.utils import secure_filename 
 from flask import Blueprint, request, jsonify
 from openai import OpenAI
+from flask import Blueprint, request, jsonify
+from werkzeug.utils import secure_filename
+import fitz  # PyMuPDF
+from datetime import datetime
+import os
+import openai
+from dotenv import load_dotenv
+from pathlib import Path
 
+env_path = Path('..') / '.env'  # Looks one level up
+load_dotenv(dotenv_path=env_path)
 # Create a Blueprint for articles
-
-def scrapper(url):
-    results = get_article_info(url)  # Get article information (returns a dictionary)
-    print(results)  # Debug print the results to ensure we get the expected output
-    
-    # Ensure all required fields are available before proceeding.
-    title = results.get('Title')
-    source = results.get('Source')
-    description = results.get('Description')
-    link = results.get('Link')
-    
-    # If any required fields are missing, return None.
-    if not title or not source or not description:
-        return None
-    
-    # Create an Article instance using the data from the dictionary.
-    article = Article(
-        title=title,
-        author=source,  # Assuming source is used as author.
-        content=description,  # Assuming description is the article content.
-        topics=None,  # Set topics to None or extract if needed.
-        link=link
-    )
-    
-    # Add the article to the database session and commit.
-    db.session.add(article)
-    db.session.commit()
-    
-    return article  
-
-
 
 articles_bp = Blueprint('articles', __name__)
 
@@ -50,50 +26,99 @@ def upload_article_from_url():
     if not url:
         return jsonify({'error': 'URL is required'}), 400
 
-    results = scrapper(url)
-
     print("Received URL:", url)
-    print()
-    #print(results)
-    
     # you could add scraping logic here or just echo it back for now
     return jsonify({'message': 'URL received successfully', 'url': url}), 200
 
+UPLOAD_FOLDER = 'temp_uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 @articles_bp.route('/articles/upload-pdf', methods=['POST'])
-def upload_article_from_pdf():
-    # Check if PDF file was received
+def upload_pdf():
     if 'pdf' not in request.files:
-        return jsonify({'error': 'No PDF file received'}), 400
+        return jsonify({"error": "No PDF file uploaded"}), 400
     
     pdf_file = request.files['pdf']
     
-    # Validate file
     if pdf_file.filename == '':
-        return jsonify({'error': 'No file selected'}), 400
+        return jsonify({"error": "Empty filename"}), 400
+
+    # Save the file to the server's temp folder
+    file_path = os.path.join(UPLOAD_FOLDER, pdf_file.filename)
+    pdf_text = extract_text_from_pdf(file_path)
+    if pdf_text:
+        try:
+            # Print the first 500 characters of the extracted text (for debugging)
+            print("Extracted Text (First 500 chars): ", pdf_text[:500])
+
+            # Limit text to stay within the token limit (approx. 4000 tokens for GPT-3.5)
+            input_text = pdf_text[:2000]  # Adjust as needed
+
+            # Send the extracted text to OpenAI for processing
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",  # Or "gpt-4"
+                messages=[
+                    {"role": "system", "content": "You are a helpful assistant. Please process the text extracted from the PDF."},
+                    {"role": "user", "content": input_text},
+                ]
+            )
+
+            # Access the response correctly
+            if 'choices' in response and len(response['choices']) > 0:
+                result_text = response['choices'][0]['message']['content'].strip()
+                print("Processed Text from OpenAI: ", result_text)
+            else:
+                print("No valid response from OpenAI.")
+            
+        except Exception as e:
+            print(f"Error processing with OpenAI: {str(e)}")
+    else:
+        print("Failed to extract text from PDF.")
+        pdf_file.save(file_path)
+
+    # Now you can use `file_path` for scraping/processing!
+    # Example: scrape_pdf(file_path)
+
+    return jsonify({
+        "message": "File uploaded successfully",
+        "server_path": file_path,  # This is the path you can use
+        "filename": pdf_file.filename,
+        "size_bytes": os.path.getsize(file_path)
+    })
+# def upload_article_from_pdf():
+#     # Check if PDF file was received
+#     if 'pdf' not in request.files:
+#         return jsonify({'error': 'No PDF file received'}), 400
     
-    if not pdf_file.filename.lower().endswith('.pdf'):
-        return jsonify({'error': 'Only PDF files are accepted'}), 400
+#     pdf_file = request.files['pdf']
     
-    try:
-        # Basic file information
-        file_size = len(pdf_file.read())
-        pdf_file.seek(0)  # Reset file pointer
+#     # Validate file
+#     if pdf_file.filename == '':
+#         return jsonify({'error': 'No file selected'}), 400
+    
+#     if not pdf_file.filename.lower().endswith('.pdf'):
+#         return jsonify({'error': 'Only PDF files are accepted'}), 400
+    
+#     try:
+#         # Basic file information
+#         file_size = len(pdf_file.read())
+#         pdf_file.seek(0)  # Reset file pointer
         
-        # Simple confirmation response
-        return jsonify({
-            'status': 'success',
-            'message': 'PDF received successfully',
-            'details': {
-                'filename': secure_filename(pdf_file.filename),
-                'size_bytes': file_size,
-                'received_at': datetime.utcnow().isoformat()
-            }
-        }), 200
+#         # Simple confirmation response
+#         return jsonify({
+#             'status': 'success',
+#             'message': 'PDF received successfully',
+#             'details': {
+#                 'filename': secure_filename(pdf_file.filename),
+#                 'size_bytes': file_size,
+#                 'received_at': datetime.utcnow().isoformat()
+#             }
+#         }), 200
         
-    except Exception as e:
-        return jsonify({
-            'error': f'Error processing PDF: {str(e)}'
-        }), 500
+#     except Exception as e:
+#         return jsonify({
+#             'error': f'Error processing PDF: {str(e)}'
+#         }), 500
 
 
 
@@ -183,3 +208,25 @@ def search_articles():
     
     articles = Article.query.filter(Article.topics.contains(topic)).all()
     return jsonify([article.to_dict() for article in articles])
+
+# Set your OpenAI API key
+openai.api_key = os.environ.get("OPENAI_API_KEY")
+
+# Function to extract text from the PDF
+def extract_text_from_pdf(pdf_path):
+    try:
+        # Open the PDF file
+        doc = fitz.open(pdf_path)
+        
+        # Initialize an empty string to store the extracted text
+        full_text = ""
+        
+        # Extract text from each page
+        for page_num in range(doc.page_count):
+            page = doc.load_page(page_num)
+            full_text += page.get_text()
+        
+        return full_text
+    except Exception as e:
+        print(f"Error reading PDF: {str(e)}")
+        return None
