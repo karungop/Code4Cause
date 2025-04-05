@@ -3,7 +3,7 @@ from models import db, Article
 from datetime import datetime
 from werkzeug.utils import secure_filename 
 from flask import Blueprint, request, jsonify
-import fitz 
+from openai import OpenAI
 
 # Create a Blueprint for articles
 
